@@ -6,8 +6,8 @@ from mkdocs.plugins import BasePlugin
 class ChessboardPlugin(BasePlugin):
     def on_page_content(self, html, **kwargs):
         # Regular expression to find code blocks starting with ```FEN
-        fen_pattern = re.compile(r'<pre><code>FEN\s+([^<]+)</code></pre>', re.MULTILINE)
-
+        # fen_pattern = re.compile(r'<pre><span></span><code>\[FEN\s+([^<]+)\]</code></pre>', re.MULTILINE)
+        fen_pattern = re.compile('<pre><span><\/span><code>\[FEN ([a-zA-Z0-9\/ -]+)]\s+<\/code><\/pre>', re.MULTILINE)
         def replace_fen(match):
             fen = match.group(1).strip()
             return f'''
