@@ -4,21 +4,12 @@ from mkdocs.plugins import BasePlugin
 
 
 class ChessboardPlugin(BasePlugin):
-    def on_page_content(self, html, **kwargs):
-        # Regular expression to find code blocks starting with ```FEN
-        # fen_pattern = re.compile(r'<pre><span></span><code>\[FEN\s+([^<]+)\]</code></pre>', re.MULTILINE)
-        fen_pattern = re.compile('<pre><span><\/span><code>\[FEN ([a-zA-Z0-9\/ -]+)]\s+<\/code><\/pre>', re.MULTILINE)
-        def replace_fen(match):
-            fen = match.group(1).strip()
-            return f'''
-                    <div class="chessboard" id="board-{fen.replace(' ', '_').replace('/', '_')}"></div>
-                    <script>
-                        var board = Chessboard('board-{fen.replace(' ', '_').replace('/', '_')}', {{
-                            position: '{fen}',
-                            pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{'{piece}.png'}'
-                        }});
-                    </script>
-                    <form id="form-{fen.replace(' ', '_').replace('/', '_')}" action="https://lichess.org/setup/ai" method="POST" style="display: none;">
+    @staticmethod
+    def lichess_form(fen: str, stockfish_level: int = 8):
+        player = 'white' if fen.split(' ')[1] == 'w' else 'black'
+
+        return f'''
+        <form id="form-{fen.replace(' ', '_').replace('/', '_')}" action="https://lichess.org/setup/ai" method="POST" style="display: none;">
                         <input type="hidden" name="fen" value="{fen}">
                         <input type="hidden" name="variant" value="3">
                         <input type="hidden" name="timeMode" value="1">
@@ -32,12 +23,33 @@ class ChessboardPlugin(BasePlugin):
                         <input type="hidden" name="ratingRange" value="1305-2305">
                         <input type="hidden" name="ratingRange_range_min" value="-500">
                         <input type="hidden" name="ratingRange_range_max" value="500">
-                        <input type="hidden" name="level" value="8">
-                        <input type="hidden" name="color" value="white">
+                        <input type="hidden" name="level" value="{stockfish_level}">
+                        <input type="hidden" name="color" value="{player}">
                     </form>
-                    <a href="#" class="post-link" onclick="document.getElementById('form-{fen.replace(' ', '_').replace('/', '_')}').submit(); return false;">Click here to practice on Lichess</a>
+                    <a href="#" class="post-link" onclick="document.getElementById('form-{fen.replace(' ', '_').replace('/', '_')}').submit(); return false;">Play against Stockfish level {stockfish_level}</a>
+        '''
+
+    def on_page_content(self, html, **kwargs):
+        # Regular expression to find code blocks starting with ```FEN
+        # fen_pattern = re.compile(r'<pre><span></span><code>\[FEN\s+([^<]+)\]</code></pre>', re.MULTILINE)
+        fen_pattern = re.compile('<pre><span><\/span><code>\[FEN ([a-zA-Z0-9\/ -]+)]\s+<\/code><\/pre>', re.MULTILINE)
+        def replace_fen(match):
+            fen = match.group(1).strip()
+            player = 'white' if fen.split(' ')[1] == 'w' else 'black'
+
+            return f'''
+                    <div class="chessboard" id="board-{fen.replace(' ', '_').replace('/', '_')}"></div>
+                    <script>
+                        var board = Chessboard('board-{fen.replace(' ', '_').replace('/', '_')}', {{
+                            position: '{fen}',
+                            orientation: '{player}',
+                            pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{'{piece}.png'}'
+                        }});
+                    </script>
+                    {self.lichess_form(fen, 7)}
+                    <br>
+                    {self.lichess_form(fen, 8)}
                     '''
-        # TODO color: white or black
 
         # Replace all FEN code blocks in the HTML
         new_html = fen_pattern.sub(replace_fen, html)
