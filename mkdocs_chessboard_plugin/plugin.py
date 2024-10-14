@@ -4,9 +4,9 @@ from mkdocs.plugins import BasePlugin
 
 
 class ChessboardPlugin(BasePlugin):
-    def on_page_markdown(self, markdown, **kwargs):
+    def on_page_content(self, html, **kwargs):
         # Regular expression to find code blocks starting with ```FEN
-        fen_pattern = re.compile(r'```FEN\s+([^`]+)```', re.MULTILINE)
+        fen_pattern = re.compile(r'<pre><code>FEN\s+([^<]+)</code></pre>', re.MULTILINE)
 
         def replace_fen(match):
             fen = match.group(1).strip()
@@ -19,13 +19,13 @@ class ChessboardPlugin(BasePlugin):
                     </script>
                     '''
 
-        # Replace all FEN code blocks in the markdown
-        new_markdown = fen_pattern.sub(replace_fen, markdown)
+        # Replace all FEN code blocks in the HTML
+        new_html = fen_pattern.sub(replace_fen, html)
 
         # Add the necessary CSS and JS for chessboard.js
-        new_markdown += '''
+        new_html += '''
                 <link rel="stylesheet" href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
                 <script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
                 '''
 
-        return new_markdown
+        return new_html
