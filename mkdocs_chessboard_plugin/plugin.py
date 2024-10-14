@@ -18,7 +18,26 @@ class ChessboardPlugin(BasePlugin):
                             pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{'{piece}.png'}'
                         }});
                     </script>
+                    <form id="form-{fen.replace(' ', '_').replace('/', '_')}" action="https://lichess.org/setup/ai" method="POST" style="display: none;">
+                        <input type="hidden" name="fen" value="{fen}">
+                        <input type="hidden" name="variant" value="3">
+                        <input type="hidden" name="timeMode" value="1">
+                        <input type="hidden" name="time" value="3">
+                        <input type="hidden" name="time_range" value="7">
+                        <input type="hidden" name="increment" value="0">
+                        <input type="hidden" name="increment_range" value="0">
+                        <input type="hidden" name="days" value="2">
+                        <input type="hidden" name="days_range" value="2">
+                        <input type="hidden" name="mode" value="0">
+                        <input type="hidden" name="ratingRange" value="1305-2305">
+                        <input type="hidden" name="ratingRange_range_min" value="-500">
+                        <input type="hidden" name="ratingRange_range_max" value="500">
+                        <input type="hidden" name="level" value="8">
+                        <input type="hidden" name="color" value="white">
+                    </form>
+                    <a href="#" class="post-link" onclick="document.getElementById('form-{fen.replace(' ', '_').replace('/', '_')}').submit(); return false;">Click here to practice on Lichess</a>
                     '''
+        # TODO color: white or black
 
         # Replace all FEN code blocks in the HTML
         new_html = fen_pattern.sub(replace_fen, html)
